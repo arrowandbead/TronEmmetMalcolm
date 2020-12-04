@@ -1,13 +1,13 @@
 #!/usr/bin/python
 
-import alpha_beta_cutoff from ab_cutoff
-import eval_func from eval
+from ab_cutoff import alpha_beta_cutoff
 
 import numpy as np
 from tronproblem import *
 from trontypes import CellType, PowerupType
-import random, math
-import tensorflow as tf
+import random
+import copy
+# import tensorflow as tf
 
 # Throughout this file, ASP means adversarial search problem.
 
@@ -15,16 +15,16 @@ import tensorflow as tf
 class StudentBot:
     """ Write your student bot here"""
 
-    def __init__(self):
-
-        # self.model = tf.keras.models.load_model("trainedModel")
-
-        self.move_map = {
-        0 : "U",
-        1 : "D",
-        2 : "L",
-        3 : "R"
-        }
+    # def __init__(self):
+    #
+    #     # self.model = tf.keras.models.load_model("trainedModel")
+    #
+    #     self.move_map = {
+    #     0 : "U",
+    #     1 : "D",
+    #     2 : "L",
+    #     3 : "R"
+    #     }
 
     def decide(self, asp):
         """
@@ -34,7 +34,7 @@ class StudentBot:
         To get started, you can get the current
         state by calling asp.get_start_state()
         """
-        return alpha_beta_cutoff(asp, 10, eval_func)
+        return alpha_beta_cutoff(asp, 9, eval_func)
 
 
         # result = self.model(self.parse(asp))
@@ -90,56 +90,144 @@ class StudentBot:
 
 
         return np.concatenate( (flattened_onehot_board, non_board_state), axis=0)
-    def adjacent_coords(self, board, loc):
-        coords = []
-        if loc[0] > 1:
-            coords.append((loc[0] - 1, loc[1]))
-        if loc[0] < (len(board) - 2):
-            coords.append((loc[0] +1 , loc[1]))
-        if loc[1] > 1:
-            coords.append((loc[0], loc[1] - 1))
-        if loc[1] < (len(board[0]) - 2):
-            coords.append((loc[0], loc[1] + 1))
+def adjacent_coords(board, loc):
+    coords = []
+    if loc[0] > 1:
+        coords.append((loc[0] - 1, loc[1]))
+    if loc[0] < (len(board) - 2):
+        coords.append((loc[0] +1 , loc[1]))
+    if loc[1] > 1:
+        coords.append((loc[0], loc[1] - 1))
+    if loc[1] < (len(board[0]) - 2):
+        coords.append((loc[0], loc[1] + 1))
 
-        return coords
+    return coords
 
-    def find_player(self, board, player_num):
+def find_player(board, player_num):
 
-        val = str(player_num)
-        for x in range(len(board)):
-            for y in range(len(board[0])):
-                if board[x][y] == val:
-                    return (x,y)
-        return None
+    val = str(player_num)
+    for x in range(len(board)):
+        for y in range(len(board[0])):
+            if board[x][y] == val:
+                return (x,y)
+    return None
 
-    def eval_func(self, TronP):
+def eval_func(TronP):
 
-        # store the visited nodes and their distance from start
-        p1_vals = {}
-        #to check easily if already visited
-        p1_visited_set = set()
-        p1_curr_loc = self.find_player(TronP.board, 1)
-        p1_frontier = deque((curr_loc_one, 0))
-        p1_visited_set.add(curr_loc_one)
+    # store the visited nodes and their distance from start
+    #to check easily if already visited
+    p1_visited_dict = {}
+    p1_curr_loc = find_player(TronP.board, 1)
+    p1_frontier = [p1_curr_loc,]
+    p1_visited_dict[p1_curr_loc] = 0
 
-        p2_vals = {}
-        #to check easily if already visited
-        p2_visited_set = set()
-        p2_curr_loc = self.find_player(TronP.board, 1)
-        p2_frontier = deque((curr_loc_one, 0))
-        p2_visited_set.add(curr_loc_one)
+    #to check easily if already visited
+    p2_visited_dict = {}
+    p2_curr_loc = find_player(TronP.board, 2)
+    p2_frontier = [p2_curr_loc,]
+    p2_visited_dict[p2_curr_loc] = 0
 
-        #player_one
-        while l:
-            curr = frontier_one.pop()
-            for z in adjacent_coords(TronP.board, curr):
-                if z in p1_visited_set:
+    numAvailSpaces = 0
+
+    for thing in TronP.board:
+        for b in thing:
+            if b not in ["#", "-", 'x', '1', '2']:
+                numAvailSpaces += 1
+
+
+    #player_one
+    while len(p1_frontier) > 0 or len(p2_frontier) > 0:
+
+        p1_next_frontier = []
+        p2_next_frontier = []
+
+        while(len(p1_frontier) != 0):
+            curr = p1_frontier.pop()
+            adj = adjacent_coords(TronP.board, curr)
+
+            for z in adj:
+                if TronP.board[z[0]][z[1]] in ["#", "-", "x", "1", "2"]:
                     continue
-                val = TronP.board[z[0]][z[1]]
-                if val != 'x' and val != '#' and val !='-':
+                if z in p1_visited_dict:
+                    continue
+                if z in p2_visited_dict and p1_visited_dict[curr] + 1 > p2_visited_dict[z]:
+                    continue
+                else:
+                    p1_next_frontier.append(z)
+                    p1_visited_dict[z] = p1_visited_dict[curr] + 1
+
+        p1_frontier = p1_next_frontier
+
+        while( len(p2_frontier)):
+            curr = p2_frontier.pop()
+            adj = adjacent_coords(TronP.board, curr)
+            for z in adj:
+                if TronP.board[z[0]][z[1]] in ["#", "-", "x", "1", "2"]:
+                    continue
+                if z in p2_visited_dict:
+                    continue
+                if z in p1_visited_dict and p2_visited_dict[curr] + 1 > p1_visited_dict[z]:
+                    continue
+                else:
+                    p2_next_frontier.append(z)
+                    p2_visited_dict[z] = p2_visited_dict[curr] + 1
+        p2_frontier = p2_next_frontier
+
+    markedBoard = copy.deepcopy(TronP.board)
 
 
-        frontier_one.append(z)
+
+    p1Set = list(p1_visited_dict.keys())
+    p2Set = list(p2_visited_dict.keys())
+    # print(p1Set)
+    # print(p2Set)
+    p1Betters = []
+    for thing in p1Set:
+        if thing not in p2Set:
+            p1Betters.append(thing)
+    p2Betters =  []
+
+    for thing in p2Set:
+        if thing not in p1Set:
+            p2Betters.append(thing)
+
+    # print("betters")
+    # print(p1Betters)
+    # print(p2Betters)
+
+
+    # for thing in p1Betters:
+    #     markedBoard[thing[0]][thing[1]] = "a"
+    # for thing in p2Betters:
+    #     markedBoard[thing[0]][thing[1]] = "b"
+    #
+    # for thing in TronP.board:
+    #     print(thing)
+    # print('\n')
+    # for thing in markedBoard:
+    #     print(thing)
+
+
+    score = len(p1Betters)-len(p2Betters)
+    print(TronP.player_to_move())
+    if TronP.player_to_move() == 1:
+        score *= -1
+    # print("player")
+    # print(TronP.player_to_move() + 1)
+    # print("score")
+    # print(score)
+    # print('\n')
+    # if score < 0:
+    #     print((1-(abs(score)/numAvailSpaces)) * 0.5)
+    #     return (1-(abs(score)/numAvailSpaces)) * 0.5
+    print("SCORE")
+    print(0.5 + 0.5*(score/numAvailSpaces))
+    print("BOARD")
+    for thing in TronP.board:
+        print(thing)
+    print('\n')
+    return 0.5 + 0.5*(score/numAvailSpaces)
+
 
 
 

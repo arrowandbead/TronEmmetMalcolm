@@ -7,7 +7,7 @@ import random
 import numpy as np
 
 
-def run_game(asp, bots, visualizer=None, delay=0.2, max_wait=0.3, colored=True):
+def run_game(asp, bots, visualizer=None, delay=0.2, max_wait=1.0, colored=True):
     """
     Inputs:
         - asp: an adversarial search problem
@@ -38,15 +38,16 @@ They will go UP this round."""
                     % (state.ptm + 1)
                 )
             decision = "U"
-        except: # pylint: disable=bare-except
+        except Exception as e: # pylint: disable=bare-except
             if visualizer:
+                print(e)
                 print(
                     """Warning. The move for player %s encountered an unexpected error.
 They will go UP this round."""
                     % (state.ptm + 1)
                 )
             decision = "U"
-        
+
         signal.setitimer(signal.ITIMER_REAL, 0)
 
         available_actions = asp.get_available_actions(state)

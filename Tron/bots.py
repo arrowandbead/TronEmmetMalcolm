@@ -1,5 +1,8 @@
 #!/usr/bin/python
 
+import alpha_beta_cutoff from ab_cutoff
+import eval_func from eval
+
 import numpy as np
 from tronproblem import *
 from trontypes import CellType, PowerupType
@@ -14,7 +17,7 @@ class StudentBot:
 
     def __init__(self):
 
-        self.model = tf.keras.models.load_model("trainedModel")
+        # self.model = tf.keras.models.load_model("trainedModel")
 
         self.move_map = {
         0 : "U",
@@ -31,11 +34,14 @@ class StudentBot:
         To get started, you can get the current
         state by calling asp.get_start_state()
         """
-        result = self.model(self.parse(asp))
+        return alpha_beta_cutoff(asp, 10, eval_func)
 
-        best_move = tf.argmax(result)
 
-        return self.move_map[result]
+        # result = self.model(self.parse(asp))
+        #
+        # best_move = tf.argmax(result)
+        #
+        # return self.move_map[result]
 
     def parse(self, TronP):
         featureNumMap = {
@@ -84,6 +90,56 @@ class StudentBot:
 
 
         return np.concatenate( (flattened_onehot_board, non_board_state), axis=0)
+    def adjacent_coords(self, board, loc):
+        coords = []
+        if loc[0] > 1:
+            coords.append((loc[0] - 1, loc[1]))
+        if loc[0] < (len(board) - 2):
+            coords.append((loc[0] +1 , loc[1]))
+        if loc[1] > 1:
+            coords.append((loc[0], loc[1] - 1))
+        if loc[1] < (len(board[0]) - 2):
+            coords.append((loc[0], loc[1] + 1))
+
+        return coords
+
+    def find_player(self, board, player_num):
+
+        val = str(player_num)
+        for x in range(len(board)):
+            for y in range(len(board[0])):
+                if board[x][y] == val:
+                    return (x,y)
+        return None
+
+    def eval_func(self, TronP):
+
+        # store the visited nodes and their distance from start
+        p1_vals = {}
+        #to check easily if already visited
+        p1_visited_set = set()
+        p1_curr_loc = self.find_player(TronP.board, 1)
+        p1_frontier = deque((curr_loc_one, 0))
+        p1_visited_set.add(curr_loc_one)
+
+        p2_vals = {}
+        #to check easily if already visited
+        p2_visited_set = set()
+        p2_curr_loc = self.find_player(TronP.board, 1)
+        p2_frontier = deque((curr_loc_one, 0))
+        p2_visited_set.add(curr_loc_one)
+
+        #player_one
+        while l:
+            curr = frontier_one.pop()
+            for z in adjacent_coords(TronP.board, curr):
+                if z in p1_visited_set:
+                    continue
+                val = TronP.board[z[0]][z[1]]
+                if val != 'x' and val != '#' and val !='-':
+
+
+        frontier_one.append(z)
 
 
 

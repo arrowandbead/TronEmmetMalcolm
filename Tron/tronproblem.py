@@ -62,7 +62,7 @@ R = "R"
 
 
 class TronProblem(AdversarialSearchProblem):
-    def __init__(self, board_file_loc, first_player):
+    def __init__(self, inboard, first_player):
         """
         Initializes the tronproblem.
         You won't need to call this directly if you use gamerunner
@@ -70,7 +70,7 @@ class TronProblem(AdversarialSearchProblem):
             board_file_loc- location of board (map) file
             first_player- the first player to move
         """
-        board = TronProblem._board_from_board_file(board_file_loc)
+        board = inboard
         board = TronProblem._randomize_player_locs(board)
         player_locs = TronProblem._player_locs_from_board(board)
 

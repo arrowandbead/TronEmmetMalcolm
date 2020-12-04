@@ -51,7 +51,7 @@ class StudentBot:
         "-" : 9
         }
 
-        max_board_size = 5
+        max_board_size = 13
         #board = TronP.board
 
         np_board = np.zeros(shape=(max_board_size, max_board_size), dtype=int)

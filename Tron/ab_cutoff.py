@@ -1,5 +1,3 @@
-import math
-
 def alpha_beta_cutoff(asp, cutoff_ply, eval_func):
     """
     This function should:
@@ -28,47 +26,42 @@ def alpha_beta_cutoff(asp, cutoff_ply, eval_func):
     Output: an action(an element of asp.get_available_actions(asp.get_start_state()))
     """
     start = asp.get_start_state()
-    player = start.player_to_move()
-    #bestMove =  alpha_beta_cutoff_recursive(start, asp, -math.inf, math.inf, player, 0, cutoff_ply, eval_func)
-    bestMove = maximize(start, asp, -math.inf, math.inf, player, 0, cutoff_ply, eval_func)
+    first = start.player_to_move()
+    alpha = float('-inf')
+    beta = float('inf')
+    moves = 0
+    best_action = evaluate_ab_cut(start,first,first,asp,alpha,beta,moves,cutoff_ply,eval_func)
+    return best_action[1]
 
-    return bestMove
-
-def maximize(state, asp, alpha, beta, ogPlayer, depth, cutoff, eval_func):
-    if(asp.is_terminal_state(state)):
-        return(asp.evaluate_state(state)[ogPlayer])
-    elif depth == cutoff:
-        eVAL = eval_func(state)
-        return(eVAL)
+def evaluate_ab_cut(state, player, first, asp, alpha, beta,moves, cutoff_ply,eval_func):
+    if asp.is_terminal_state(state):
+        return [asp.evaluate_state(state)[first], None]
+    if moves == cutoff_ply:
+        if player == first:
+            return [eval_func(state), None]
+        else:
+            return [1-eval_func(state), None]
     else:
-        bestVal = -math.inf
-        bestMove = None
-        for mv in asp.get_available_actions(state):
-            result = minimize(asp.transition(state, mv), asp, alpha, beta, ogPlayer, depth+1, cutoff, eval_func)
-            if(result > bestVal):
-                bestVal = result
-                bestMove = mv
-            if(bestVal >= beta):
-                if(depth==0):
-                    return mv
-                return bestVal
-            alpha = max(bestVal, alpha)
-        if(depth==0):
-            return bestMove
-        return bestVal
+        #max layer
+        if player == first:
+            best_action = [float('-inf'),None]
+            for action in asp.get_available_actions(state):
+                evaluation = evaluate_ab_cut(asp.transition(state,action), get_opp(player), first,asp, alpha,beta, moves+1,cutoff_ply, eval_func)[0]
+                if evaluation >= beta:
+                    return [evaluation,action]
+                alpha = max(evaluation,alpha)
+                if evaluation > best_action[0]:
+                    best_action = [evaluation, action]
 
-def minimize(state, asp, alpha, beta, ogPlayer, depth, cutoff, eval_func):
-    if(asp.is_terminal_state(state)):
-        return(asp.evaluate_state(state)[ogPlayer])
-    elif depth == cutoff:
-        eVAL = eval_func(state)
-        return(eVAL)
-    else:
-        bestVal = math.inf
-        for mv in asp.get_available_actions(state):
-            result = maximize(asp.transition(state,mv), asp, alpha, beta, ogPlayer, depth + 1, cutoff, eval_func)
-            bestVal = min(result, bestVal)
-            if(bestVal <= alpha):
-                return bestVal
-            beta = min(bestVal, beta)
-        return bestVal
+        else:
+            #min layer
+            best_action = [float('inf'),None]
+            for action in asp.get_available_actions(state):
+                evaluation = evaluate_ab_cut(asp.transition(state,action), get_opp(player), first,asp, alpha,beta,moves +1, cutoff_ply, eval_func)[0]
+                if evaluation <= alpha:
+                    return [evaluation,action]
+                beta = min(beta,evaluation)
+                if evaluation < best_action[0]:
+                    best_action = [evaluation, action]
+
+    return best_action

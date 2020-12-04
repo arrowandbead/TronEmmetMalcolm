@@ -1,8 +1,10 @@
+import numpy as np
 
 
-class sbot1:
+def decide(TronP):
 
-    @staticmethod
-    def decide(TronP):
+    parsedState = sbot1.parse(TronP)
 
-        parsedState = sbot1.parse(TronP)
+def parse(TronP):
+    print("p")
+    

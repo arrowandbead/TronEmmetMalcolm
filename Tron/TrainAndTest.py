@@ -58,7 +58,7 @@ def eval_func(board):
             adj = adjacent_coords(board, curr)
 
             for z in adj:
-                if TronP.board[z[0]][z[1]] in ["#", "-", "x", "1", "2"]:
+                if board[z[0]][z[1]] in ["#", "-", "x", "1", "2"]:
                     continue
                 if z in p1_visited_dict:
                     continue
@@ -74,7 +74,7 @@ def eval_func(board):
             curr = p2_frontier.pop()
             adj = adjacent_coords(TronP.board, curr)
             for z in adj:
-                if TronP.board[z[0]][z[1]] in ["#", "-", "x", "1", "2"]:
+                if board[z[0]][z[1]] in ["#", "-", "x", "1", "2"]:
                     continue
                 if z in p2_visited_dict:
                     continue
@@ -85,18 +85,14 @@ def eval_func(board):
                     p2_visited_dict[z] = p2_visited_dict[curr] + 1
         p2_frontier = p2_next_frontier
 
-
-
-
     p1Set = p1_visited_dict.keys()
     p2Set = p2_visited_dict.keys()
-    # print(p1Set)
-    # print(p2Set)
+
     p1ScoreMod = 0
     p1Betters = []
     for thing in p1Set:
         if thing not in p2Set:
-            cellVal = TronP.board[thing[0]][thing[1]]
+            cellVal = board[thing[0]][thing[1]]
             if(cellVal == "@"):
                 p1ScoreMod += 1
             elif(cellVal == "*" or cellVal == "!"):
@@ -107,7 +103,7 @@ def eval_func(board):
     p2ScoreMod = 0
     for thing in p2Set:
         if thing not in p1Set:
-            cellVal = TronP.board[thing[0]][thing[1]]
+            cellVal = board[thing[0]][thing[1]]
             if(cellVal == "@"):
                 p2ScoreMod += 1
             elif(cellVal == "*" or cellVal == "!"):
@@ -118,8 +114,6 @@ def eval_func(board):
 
 
     score = (len(p1Betters) + p1ScoreMod) - (len(p2Betters) + p2ScoreMod)
-    if TronP.player_to_move() == 1:
-        score *= -1
     return 0.5 + 0.5*(score/numAvailSpaces)
 
 def trainOneGame(TronP, model):
@@ -149,6 +143,14 @@ def generate_trajectory(env, model):
     :param model: The model used to generate the actions
     :returns: A tuple of lists (states, actions, rewards), where each list has length equal to the number of timesteps in the episode
     """
+
+     move_map = {
+        0 : "U",
+        1 : "D",
+        2 : "L",
+        3 : "R"
+        }
+
     p1Trajectory = {
         "states" : [],
         "actions" : [],
@@ -166,17 +168,16 @@ def generate_trajectory(env, model):
         # TODO:
         # 1) use model to generate probability distribution over next actions
         # 2) sample from this distribution to pick the next action
-        distrib = model.call(tf.expand_dims(parse(state), axis=0))
+        distrib = model.call(tf.expand_dims(parse(state.board), axis=0))
 
         action = np.random.choice(len(tf.squeeze(distrib)), 1, p=tf.squeeze(distrib).numpy())[0]
 
 
-        states.append(state)
+        states.append(state.board)
         actions.append(action)
-        state = asp.transition(state, action)
-        done = asp.is_terminal_state(state)
-        rwd, done, _ = env.step(action)
-        rwd = eval_func(state)
+        state = env.transition(state, move_map[action])
+        done = env.is_terminal_state(state)
+        rwd = eval_func(state.board)
         rewards.append(rwd)
 
     return states, actions, rewards

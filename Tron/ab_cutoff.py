@@ -65,3 +65,8 @@ def evaluate_ab_cut(state, player, first, asp, alpha, beta,moves, cutoff_ply,eva
                     best_action = [evaluation, action]
 
     return best_action
+
+def get_opp(player):
+    if player == 1:
+        return 0
+    return 1

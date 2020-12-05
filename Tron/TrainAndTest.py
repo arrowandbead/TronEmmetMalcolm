@@ -10,6 +10,7 @@ def trainOneGame(TronP, model):
 
 
     with tf.GradientTape() as tape:
+        
         p1_loss = model.loss(p1["states"], p1["actions"], p1_discounted_rewards)
         p2_loss = model.loss(p2["states"], p2["actions"], p2_discounted_rewards)
 

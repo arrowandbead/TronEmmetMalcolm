@@ -34,7 +34,7 @@ class StudentBot:
         To get started, you can get the current
         state by calling asp.get_start_state()
         """
-        return alpha_beta_cutoff(asp, 9, eval_func)
+        return alpha_beta_cutoff(asp, 7, eval_func)
 
 
         # result = self.model(self.parse(asp))
@@ -128,10 +128,10 @@ def eval_func(TronP):
     p2_visited_dict[p2_curr_loc] = 0
 
     numAvailSpaces = 0
-
+    setty = {"#", "-", 'x', '1', '2'}
     for thing in TronP.board:
         for b in thing:
-            if b not in ["#", "-", 'x', '1', '2']:
+            if b not in setty:
                 numAvailSpaces += 1
 
 
@@ -173,12 +173,11 @@ def eval_func(TronP):
                     p2_visited_dict[z] = p2_visited_dict[curr] + 1
         p2_frontier = p2_next_frontier
 
-    markedBoard = copy.deepcopy(TronP.board)
 
 
 
-    p1Set = list(p1_visited_dict.keys())
-    p2Set = list(p2_visited_dict.keys())
+    p1Set = p1_visited_dict.keys()
+    p2Set = p2_visited_dict.keys()
     # print(p1Set)
     # print(p2Set)
     p1Betters = []
@@ -209,7 +208,7 @@ def eval_func(TronP):
 
 
     score = len(p1Betters)-len(p2Betters)
-    print(TronP.player_to_move())
+    # print(TronP.player_to_move())
     if TronP.player_to_move() == 1:
         score *= -1
     # print("player")
@@ -220,12 +219,12 @@ def eval_func(TronP):
     # if score < 0:
     #     print((1-(abs(score)/numAvailSpaces)) * 0.5)
     #     return (1-(abs(score)/numAvailSpaces)) * 0.5
-    print("SCORE")
-    print(0.5 + 0.5*(score/numAvailSpaces))
-    print("BOARD")
-    for thing in TronP.board:
-        print(thing)
-    print('\n')
+    # print("SCORE")
+    # print(0.5 + 0.5*(score/numAvailSpaces))
+    # print("BOARD")
+    # for thing in TronP.board:
+    #     print(thing)
+    # print('\n')
     return 0.5 + 0.5*(score/numAvailSpaces)
 
 

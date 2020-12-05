@@ -129,9 +129,14 @@ def eval_func(TronP):
 
     numAvailSpaces = 0
     setty = {"#", "-", 'x', '1', '2'}
+    goody = {"*", "@", "!"}
     for thing in TronP.board:
         for b in thing:
             if b not in setty:
+                numAvailSpaces += 1
+            if b == "*" or b == "!":
+                numAvailSpaces += 4
+            if b == "@":
                 numAvailSpaces += 1
 
 
@@ -181,14 +186,24 @@ def eval_func(TronP):
     # print(p1Set)
     # print(p2Set)
     p1ScoreMod = 0
+    tieScore = 0
     p1Betters = []
     for thing in p1Set:
+        cellVal = TronP.board[thing[0]][thing[1]]
         if thing not in p2Set:
-            if(TronP.board[thing[0]][thing[1]] == "@"):
+            if(cellVal == "@"):
                 p1ScoreMod += 1
             elif(cellVal == "*" or cellVal == "!"):
                 p1ScoreMod += 4
             p1Betters.append(thing)
+        else:
+            if(cellVal == "@"):
+                tieScore += 2
+            elif(cellVal == " "):
+                tieScore += 1
+            elif(cellVal == "*" or cellVal == "!"):
+                tieScore += 5
+
 
     p2Betters =  []
     p2ScoreMod = 0
@@ -201,6 +216,11 @@ def eval_func(TronP):
                 p2ScoreMod += 4
 
             p2Betters.append(thing)
+
+    if TronP.player_to_move() == 0:
+        p1ScoreMod += tieScore
+    else:
+        p2ScoreMod += tieScore
 
     # print("betters")
     # print(p1Betters)

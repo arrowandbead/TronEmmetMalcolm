@@ -10,7 +10,7 @@ def trainOneGame(TronP, model):
 
 
     with tf.GradientTape() as tape:
-        
+
         p1_loss = model.loss(p1["states"], p1["actions"], p1_discounted_rewards)
         p2_loss = model.loss(p2["states"], p2["actions"], p2_discounted_rewards)
 
@@ -90,7 +90,7 @@ def parse(self, TronP):
     "-" : 9
     }
 
-    max_board_size = 5
+    max_board_size = 13
     #board = TronP.board
 
     np_board = np.zeros(shape=(max_board_size, max_board_size), dtype=int)

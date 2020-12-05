@@ -184,7 +184,8 @@ def eval_func(TronP):
     p1Betters = []
     for thing in p1Set:
         if thing not in p2Set:
-            if(TronP.board[thing[0]][thing[1]] == "@"):
+            cellVal = TronP.board[thing[0]][thing[1]]
+            if(cellVal == "@"):
                 p1ScoreMod += 1
             elif(cellVal == "*" or cellVal == "!"):
                 p1ScoreMod += 4

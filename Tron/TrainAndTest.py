@@ -55,7 +55,7 @@ def eval_func(board):
 
         while(len(p1_frontier) != 0):
             curr = p1_frontier.pop()
-            adj = adjacent_coords(.board, curr)
+            adj = adjacent_coords(board, curr)
 
             for z in adj:
                 if TronP.board[z[0]][z[1]] in ["#", "-", "x", "1", "2"]:
@@ -182,7 +182,7 @@ def generate_trajectory(env, model):
     return states, actions, rewards
 
 def discount(rewards, discount_factor=.99):
-
+    """
     Takes in a list of rewards for each timestep in an episode, and
     returns a list of the discounted rewards for each timestep.
     Refer to the slides to see how this is done.
@@ -190,6 +190,7 @@ def discount(rewards, discount_factor=.99):
     :param rewards: List of rewards from an episode [r_{t1},r_{t2},...]
     :param discount_factor: Gamma discounting factor to use, defaults to .99
     :returns: discounted_rewards: list containing the discounted rewards for each timestep in the original rewards list
+    """
 
     outputList = [0]*len(rewards)
     for i in range(len(rewards)):

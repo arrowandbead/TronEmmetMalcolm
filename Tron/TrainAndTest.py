@@ -253,10 +253,12 @@ def parse(self, TronP):
 def main():
 
     tm = TronModel()
-    mapList = []
+    mapList = ["center_block.txt", "diagonal_blocks.txt", "divider.txt", "empty_room.txt", "hunger_games.txt",  "joust.txt", "small_room.txt"]
     for i in range(1000):
+        if(i%50 == 0):
+            print i
         mapChoice = random.choice(mapList)
-        trainOneGame(TronProblem(mapChoice, 0))
+        trainOneGame(TronProblem("maps/" + mapChoice, 0))
     tm.save("trainedModel")
 
 

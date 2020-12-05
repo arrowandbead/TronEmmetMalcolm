@@ -158,7 +158,7 @@ def eval_func(TronP):
 
         p1_frontier = p1_next_frontier
 
-        while( len(p2_frontier)):
+        while( len(p2_frontier) != 0):
             curr = p2_frontier.pop()
             adj = adjacent_coords(TronP.board, curr)
             for z in adj:
@@ -180,14 +180,26 @@ def eval_func(TronP):
     p2Set = p2_visited_dict.keys()
     # print(p1Set)
     # print(p2Set)
+    p1ScoreMod = 0
     p1Betters = []
     for thing in p1Set:
         if thing not in p2Set:
+            if(TronP.board[thing[0]][thing[1]] == "@"):
+                p1ScoreMod += 1
+            elif(cellVal == "*" or cellVal == "!"):
+                p1ScoreMod += 4
             p1Betters.append(thing)
-    p2Betters =  []
 
+    p2Betters =  []
+    p2ScoreMod = 0
     for thing in p2Set:
         if thing not in p1Set:
+            cellVal = TronP.board[thing[0]][thing[1]]
+            if(cellVal == "@"):
+                p2ScoreMod += 1
+            elif(cellVal == "*" or cellVal == "!"):
+                p2ScoreMod += 4
+
             p2Betters.append(thing)
 
     # print("betters")
@@ -207,7 +219,7 @@ def eval_func(TronP):
     #     print(thing)
 
 
-    score = len(p1Betters)-len(p2Betters)
+    score = (len(p1Betters) + p1ScoreMod) - (len(p2Betters) + p2ScoreMod)
     # print(TronP.player_to_move())
     if TronP.player_to_move() == 1:
         score *= -1

@@ -1,12 +1,11 @@
 import os
-import gym
 import numpy as np
 import tensorflow as tf
 
 # Killing optional CPU driver warnings
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
-class ReinforceWithBaseline(tf.keras.Model):
+class TM(tf.keras.Model):
     def __init__(self, state_size, num_actions):
         """
         The ReinforceWithBaseline class that inherits from tf.keras.Model.
@@ -19,7 +18,7 @@ class ReinforceWithBaseline(tf.keras.Model):
                            but it can be used as the input size for your first dense layer.
         :param num_actions: number of actions in an environment
         """
-        super(ReinforceWithBaseline, self).__init__()
+        super(TM, self).__init__()
         self.num_actions = num_actions
 
 
@@ -28,10 +27,10 @@ class ReinforceWithBaseline(tf.keras.Model):
 
         self.optimizer = tf.keras.optimizers.Adam(self.learning_rate)
 
-        self.DL1 = tf.keras.layers.Dense(4*state_size, activation='relu')
+        self.DL1 = tf.keras.layers.Dense(3*state_size, activation='relu')
         self.DL2 = tf.keras.layers.Dense(num_actions)
 
-        self.hidden_state_size = 10
+        self.hidden_state_size = 100
         self.DL3 = tf.keras.layers.Dense(self.hidden_state_size, activation='relu')
         self.DL4 = tf.keras.layers.Dense(1)
         # TODO: Define actor network parameters, critic network parameters, and optimizer
@@ -49,8 +48,11 @@ class ReinforceWithBaseline(tf.keras.Model):
         for each state in the episode
         """
         # TODO: implement this!
-        dl1Output = self.DL1(tf.convert_to_tensor(states))
+        dl1Output = self.DL1(tf.dtypes.cast(tf.convert_to_tensor(states), tf.int32))
+        print(states)
+        print(dl1Output)
         dl2Output = self.DL2(dl1Output)
+        print(dl2Output)
         return tf.nn.softmax(dl2Output)
 
     def value_function(self, states):
@@ -89,6 +91,8 @@ class ReinforceWithBaseline(tf.keras.Model):
         # TODO: implement this :)
         # Hint: use tf.gather_nd (https://www.tensorflow.org/api_docs/python/tf/gather_nd) to get the probabilities of the actions taken by the model
 
+        if(len(states) == 0):
+            return tf.cast(0, tf.float32)
         probabilities = self.call(states)
 
         actionsPairedWithActionNumber = tf.concat( [tf.reshape(tf.range(len(states)), (len(states), 1)), tf.reshape(tf.squeeze(actions), (len(actions), 1))], 1)

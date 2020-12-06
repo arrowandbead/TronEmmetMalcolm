@@ -114,14 +114,11 @@ def find_player(board, player_num):
 
 def eval_func(TronP):
 
-    # store the visited nodes and their distance from start
-    #to check easily if already visited
     p1_visited_dict = {}
     p1_curr_loc = find_player(TronP.board, 1)
     p1_frontier = [p1_curr_loc,]
     p1_visited_dict[p1_curr_loc] = 0
 
-    #to check easily if already visited
     p2_visited_dict = {}
     p2_curr_loc = find_player(TronP.board, 2)
     p2_frontier = [p2_curr_loc,]
@@ -222,41 +219,11 @@ def eval_func(TronP):
     else:
         p2ScoreMod += tieScore
 
-    # print("betters")
-    # print(p1Betters)
-    # print(p2Betters)
-
-
-    # for thing in p1Betters:
-    #     markedBoard[thing[0]][thing[1]] = "a"
-    # for thing in p2Betters:
-    #     markedBoard[thing[0]][thing[1]] = "b"
-    #
-    # for thing in TronP.board:
-    #     print(thing)
-    # print('\n')
-    # for thing in markedBoard:
-    #     print(thing)
-
-
     score = (len(p1Betters) + p1ScoreMod) - (len(p2Betters) + p2ScoreMod)
-    # print(TronP.player_to_move())
+
     if TronP.player_to_move() == 1:
         score *= -1
-    # print("player")
-    # print(TronP.player_to_move() + 1)
-    # print("score")
-    # print(score)
-    # print('\n')
-    # if score < 0:
-    #     print((1-(abs(score)/numAvailSpaces)) * 0.5)
-    #     return (1-(abs(score)/numAvailSpaces)) * 0.5
-    # print("SCORE")
-    # print(0.5 + 0.5*(score/numAvailSpaces))
-    # print("BOARD")
-    # for thing in TronP.board:
-    #     print(thing)
-    # print('\n')
+
     return 0.5 + 0.5*(score/numAvailSpaces)
 
 

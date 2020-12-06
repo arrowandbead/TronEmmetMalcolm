@@ -146,22 +146,24 @@ def trainOneGame(TronP, model):
     p1_discounted_rewards = discount(p1_sar["rewards"])
     p2_discounted_rewards = discount(p2_sar["rewards"])
 
-
+    print('A RUN')
+    print(len(p1_sar["states"]))
+    print("\n")
     with tf.GradientTape() as tape:
 
         p1_loss = model.loss(p1_sar["states"], p1_sar["actions"], p1_discounted_rewards)
+        print(p1_loss)
+        if p1_loss != 0:
+            p1_gradients = tape.gradient(p1_loss, model.trainable_variables)
 
-        p1_gradients = tape.gradient(p1_loss, model.trainable_variables)
-
-        model.optimizer.apply_gradients(zip(p1_gradients, model.trainable_variables))
+            model.optimizer.apply_gradients(zip(p1_gradients, model.trainable_variables))
     with tf.GradientTape() as tape:
 
         p2_loss = model.loss(p2_sar["states"], p2_sar["actions"], p2_discounted_rewards)
+        if p2_loss != 0:
+            p2_gradients = tape.gradient(p2_loss, model.trainable_variables)
 
-        p2_gradients = tape.gradient(p2_loss, model.trainable_variables)
-
-        model.optimizer.apply_gradients(zip(p2_gradients, model.trainable_variables))
-
+            model.optimizer.apply_gradients(zip(p2_gradients, model.trainable_variables))
 
 def generate_trajectory(TronP, model):
     move_map = {
@@ -197,8 +199,7 @@ def generate_trajectory(TronP, model):
         parsedState = parse(state)
 
         distrib = model.call(tf.expand_dims(parsedState, axis=0))
-        print("distribution")
-        print(distrib)
+
         action = np.random.choice(len(tf.squeeze(distrib)), 1, p=tf.squeeze(distrib).numpy())[0]
 
 
@@ -291,12 +292,15 @@ def main():
 
     tm = TronModel.TM(2901, 4)
     mapList = ["center_block.txt", "diagonal_blocks.txt", "divider.txt", "empty_room.txt", "hunger_games.txt",  "joust.txt", "small_room.txt"]
+    tm.build((2901, 1))
+    input()
+    tm.save("trainedModel", save_format='tf')
+    exit()
     for i in range(200):
         if(i%10 == 0):
             print(i)
         mapChoice = random.choice(mapList)
         trainOneGame(TronProblem("maps/" + mapChoice, 0), tm)
-    tm.save("trainedModel")
 
 
 

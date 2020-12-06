@@ -22,19 +22,18 @@ class TM(tf.keras.Model):
         self.num_actions = num_actions
 
 
-        self.learning_rate = 0.01
+        self.learning_rate = 0.0005
         self.gamma = 0.99
 
         self.optimizer = tf.keras.optimizers.Adam(self.learning_rate)
 
+        # self.model_output = tf.keras.Sequential()
         self.DL1 = tf.keras.layers.Dense(3*state_size, activation='relu')
         self.DL2 = tf.keras.layers.Dense(num_actions)
 
         self.hidden_state_size = 100
         self.DL3 = tf.keras.layers.Dense(self.hidden_state_size, activation='relu')
         self.DL4 = tf.keras.layers.Dense(1)
-        # TODO: Define actor network parameters, critic network parameters, and optimizer
-        pass
 
     def call(self, states):
         """
@@ -47,12 +46,10 @@ class TM(tf.keras.Model):
         :return: A [episode_length,num_actions] matrix representing the probability distribution over actions
         for each state in the episode
         """
-        # TODO: implement this!
-        dl1Output = self.DL1(tf.dtypes.cast(tf.convert_to_tensor(states), tf.int32))
-        print(states)
-        print(dl1Output)
+        states_as_tensor = tf.dtypes.cast(tf.convert_to_tensor(states), tf.int32)
+        dl1Output = self.DL1(states_as_tensor)
+
         dl2Output = self.DL2(dl1Output)
-        print(dl2Output)
         return tf.nn.softmax(dl2Output)
 
     def value_function(self, states):
@@ -88,8 +85,6 @@ class TM(tf.keras.Model):
         :param discounted_rewards: Discounted rewards throughout a complete episode (represented as an [episode_length] array)
         :return: loss, a TensorFlow scalar
         """
-        # TODO: implement this :)
-        # Hint: use tf.gather_nd (https://www.tensorflow.org/api_docs/python/tf/gather_nd) to get the probabilities of the actions taken by the model
 
         if(len(states) == 0):
             return tf.cast(0, tf.float32)

@@ -5,6 +5,10 @@ from collections import defaultdict
 import support
 import random
 import numpy as np
+import sys, os
+import traceback
+
+
 
 
 def run_game(asp, bots, visualizer=None, delay=0.2, max_wait=1.0, colored=True):
@@ -40,7 +44,7 @@ They will go UP this round."""
             decision = "U"
         except Exception as e: # pylint: disable=bare-except
             if visualizer:
-                print(e)
+                print(traceback.format_exc())
                 print(
                     """Warning. The move for player %s encountered an unexpected error.
 They will go UP this round."""

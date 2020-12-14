@@ -11,6 +11,7 @@ import copy
 
 # Throughout this file, ASP means adversarial search problem.
 
+evalCount = 0
 
 class StudentBot:
     """ Write your student bot here"""

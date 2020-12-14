@@ -3,6 +3,7 @@ import tensorflow as tf
 import random
 from tronproblem import TronProblem
 import numpy as np
+import time
 
 def adjacent_coords(board, loc):
     coords = []
@@ -143,27 +144,15 @@ def eval_func(TronP):
 def trainOneGame(TronP, model):
     p1_sar, p2_sar = generate_trajectory(TronP, model)
 
-    p1_discounted_rewards = discount(p1_sar["rewards"])
-    p2_discounted_rewards = discount(p2_sar["rewards"])
 
-    print('A RUN')
-    print(len(p1_sar["states"]))
-    print("\n")
     with tf.GradientTape() as tape:
 
-        p1_loss = model.loss(p1_sar["states"], p1_sar["actions"], p1_discounted_rewards)
-        print(p1_loss)
-        if p1_loss != 0:
-            p1_gradients = tape.gradient(p1_loss, model.trainable_variables)
+        loss = model.loss(p1_sar["states"], p2_sar["states"], p1_sar["parsedStates"], p2_sar["parsedStates"], TronP)
+        if loss != 0:
+            p1_gradients = tape.gradient(loss, model.trainable_variables)
 
             model.optimizer.apply_gradients(zip(p1_gradients, model.trainable_variables))
-    with tf.GradientTape() as tape:
-
-        p2_loss = model.loss(p2_sar["states"], p2_sar["actions"], p2_discounted_rewards)
-        if p2_loss != 0:
-            p2_gradients = tape.gradient(p2_loss, model.trainable_variables)
-
-            model.optimizer.apply_gradients(zip(p2_gradients, model.trainable_variables))
+        return loss, (len(p1_sar["states"]), len(p2_sar["states"]))
 
 def generate_trajectory(TronP, model):
     move_map = {
@@ -175,13 +164,13 @@ def generate_trajectory(TronP, model):
 
     p1Trajectory = {
         "states" : [],
-        "actions" : [],
-        "rewards" : []
+        "distrib" : [],
+        "parsedStates" : []
     }
     p2Trajectory = {
         "states" : [],
-        "actions" : [],
-        "rewards" : []
+        "distrib" : [],
+        "parsedStates" : []
     }
     state = TronP._start_state
     done = False
@@ -196,23 +185,19 @@ def generate_trajectory(TronP, model):
             playerMap = p2Trajectory
 
 
-        parsedState = parse(state)
+        parsedState = parseOneHot(state)
 
-        distrib = model.call(tf.expand_dims(parsedState, axis=0))
+        distrib = tf.squeeze(model.call(tf.expand_dims(parsedState, axis=0)))
 
-        action = np.random.choice(len(tf.squeeze(distrib)), 1, p=tf.squeeze(distrib).numpy())[0]
+        # action = np.random.choice(len(tf.squeeze(distrib)), 1, p=tf.squeeze(distrib).numpy())[0]
+        action = tf.math.argmax(distrib).numpy()
 
 
-        playerMap["states"].append(parsedState)
-        playerMap["actions"].append(action)
+        playerMap["states"].append(state)
+        playerMap["parsedStates"].append(parsedState)
+        playerMap["distrib"].append(distrib)
         state = TronP.transition(state, move_map[action])
         done = TronP.is_terminal_state(state)
-        rwd = None
-        if(done):
-            rwd = TronP.evaluate_state(state)[ptm]
-        else:
-            rwd = eval_func(state)
-        playerMap["rewards"].append(rwd)
 
     return (p1Trajectory, p2Trajectory)
 
@@ -238,7 +223,7 @@ def discount(rewards, discount_factor=.99):
     return outputList
 
 
-def parse(TState):
+def parseOneHot(TState):
     featureNumMap = {
     "#" : 0,
     "1" : 1,
@@ -287,20 +272,56 @@ def parse(TState):
 
     return np.concatenate( (flattened_onehot_board, non_board_state), axis=0)
 
+def parseNumberForm(TState):
+    featureNumMap = {
+    "#" : 0,
+    "1" : 1,
+    "2" : 2,
+    " " : 3,
+    "x" : 4,
+    "*" : 5,
+    "@" : 6,
+    "^" : 7,
+    "!" : 8,
+    "-" : 9
+    }
+
+    board = TState.board
+    max_board_size = 13
+    #board = TronP.board
+
+    np_board = np.zeros(shape=(max_board_size, max_board_size), dtype=int)
+
+    for i in range(len(board)):
+        for j in range(len(board[0])):
+            np_board[i][j] = featureNumMap[board[i][j]]
+    non_board_state = np.zeros(shape=(5,), dtype=int)
+    non_board_state[0] = int(TState.player_to_move())
+    non_board_state[1] = TState.player_has_armor(0)
+    non_board_state[2] = TState.player_has_armor(1)
+    non_board_state[3] = TState.get_remaining_turns_speed(0)
+    non_board_state[4] = TState.get_remaining_turns_speed(1)
+
+    np_board = np_board.flatten()
+
+    return np.concatenate( (np_board, non_board_state), axis=0)
 
 def main():
 
     tm = TronModel.TM(2901, 4)
     mapList = ["center_block.txt", "diagonal_blocks.txt", "divider.txt", "empty_room.txt", "hunger_games.txt",  "joust.txt", "small_room.txt"]
-    tm.build((2901, 1))
-    input()
-    tm.save("trainedModel", save_format='tf')
-    exit()
+
     for i in range(200):
+
+        # mapChoice = random.choice(mapList)
+        # loss, lengths = trainOneGame(TronProblem("maps/" + mapChoice, 0), tm)
+        loss, lengths = trainOneGame(TronProblem("maps/" + "center_block.txt", 0), tm)
+        print(i)
         if(i%10 == 0):
-            print(i)
-        mapChoice = random.choice(mapList)
-        trainOneGame(TronProblem("maps/" + mapChoice, 0), tm)
+            print(loss)
+            print(lengths)
+        print('\n')
+
 
 
 

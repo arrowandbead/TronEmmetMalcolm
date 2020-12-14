@@ -34,7 +34,7 @@ class StudentBot:
         To get started, you can get the current
         state by calling asp.get_start_state()
         """
-        return alpha_beta_cutoff(asp, 7, eval_func)
+        return alpha_beta_cutoff(asp, 8, eval_func)
 
 
         # result = self.model(self.parse(asp))
@@ -57,7 +57,7 @@ class StudentBot:
         "-" : 9
         }
 
-        max_board_size = 13
+        max_board_size = 17
         #board = TronP.board
 
         np_board = np.zeros(shape=(max_board_size, max_board_size), dtype=int)

@@ -3,6 +3,8 @@ import numpy as np
 import tensorflow as tf
 from bots import StudentBot
 
+import random
+
 # Killing optional CPU driver warnings
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
@@ -11,7 +13,7 @@ class TM(tf.keras.Model):
         super(TM, self).__init__()
 
 
-        self.learning_rate = 0.001
+        self.learning_rate = 0.01
         self.gamma = 0.99
 
         self.optimizer = tf.keras.optimizers.Adam(self.learning_rate)
@@ -58,7 +60,7 @@ class TM(tf.keras.Model):
         flattened = self.flatten(mpl2Output)
         dl2Output = self.DL2(flattened)
         return self.softmax(self.outputLayer(dl2Output))
-        
+
 
 
 
@@ -128,8 +130,17 @@ class TM(tf.keras.Model):
         # print("BREAK")
         # for thing in p2distrib:
         #     print(thing)
+        # REVIEW:
+
         if(p2Loss == 0):
             return p1Loss
+
+        ra = random.randint(0,1)
+        if(ra):
+            return p1Loss
+        else:
+            return p2Loss
+
 
 
         return (p1Loss + p2Loss)/2

@@ -311,7 +311,7 @@ def main():
     tm = TronModel.TM(2901, 4)
     mapList = ["center_block.txt", "diagonal_blocks.txt", "divider.txt", "empty_room.txt", "hunger_games.txt",  "joust.txt", "small_room.txt"]
 
-    for i in range(200):
+    for i in range(20000):
 
         # mapChoice = random.choice(mapList)
         # loss, lengths = trainOneGame(TronProblem("maps/" + mapChoice, 0), tm)
